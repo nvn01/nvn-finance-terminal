@@ -1,0 +1,43 @@
+# Node/Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/.turbo/
+frontend/.vercel/
+frontend/out/
+frontend/.cache/
+frontend/.eslintcache
+frontend/coverage/
+frontend/.pnpm-store/
+
+# Go build artifacts
+backend/bin/
+backend/build/
+backend/dist/
+backend/*.exe
+backend/*.out
+
+# Docker and compose
+docker-compose.override.yml
+**/.dockerignore
+
+# Env files (keep secrets out of git)
+*.env
+*.env.*
+!example.env
+
+# IDE/editor
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+**/*.log
+logs/
+
+# Misc
+*.swp
+*.swo

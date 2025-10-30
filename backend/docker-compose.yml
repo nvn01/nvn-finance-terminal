@@ -1,0 +1,19 @@
+services:
+  api:
+    build: .
+    container_name: bloomberg_api
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PORT=8080
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-http://localhost:3001}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

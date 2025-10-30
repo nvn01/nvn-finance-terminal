@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-mono: "Courier New", Courier, monospace;
+  }
+
+  body {
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: none;
+  }
+
+  body.dark {
+    background-color: #121212;
+    color: white;
+  }
+
+  body.light {
+    background-color: #f0f0f0;
+    color: black;
+  }
+}
+
+/* Extra slow ticker tape animation - 30% slower than previous */
+@keyframes scroll-extra-slow {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-16.666%);
+  }
+}
+
+.ticker-scroll-extra-slow {
+  animation: scroll-extra-slow 180s linear infinite;
+}
+
+/* Slower ticker tape animation */
+@keyframes scroll-slow {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.ticker-scroll-slow {
+  animation: scroll-slow 120s linear infinite;
+}
+
+/* Original faster ticker tape animation */
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.ticker-scroll {
+  animation: scroll 60s linear infinite;
+}
