@@ -7,9 +7,8 @@ import { X, Maximize2, Sun, Moon } from "lucide-react";
 import { MarketOverviewCarousel } from "@/components/market-overview-carousel";
 import { StockTile } from "@/components/stock-tile";
 import { marketData as standardMarketData } from "../../marketData";
-import { getLatestCandles, getRangeCandles } from "../../lib/api";
 
-// Default overview used as fallback; replaced by API on mount
+// Default overview used as fallback; using dummy data for now
 const defaultOverviewData = [
 	{
 		name: "S&P 500",
@@ -103,7 +102,7 @@ const defaultOverviewData = [
 	},
 ];
 
-// News data
+// News data (dummy)
 const newsData = [
 	{
 		title: "Perubahan Kepemilikan Saham - (CDIA) Chandra Daya Investasi Tbk",
@@ -138,355 +137,253 @@ const newsData = [
 ];
 
 export default function HomePage() {
-	const [isDarkMode, setIsDarkMode] = useState(true);
-	const router = useRouter();
-	const [currentMarketIndex, setCurrentMarketIndex] = useState(0);
-	const [tiles, setTiles] = useState<any[]>([]);
-	const [overview, setOverview] = useState(defaultOverviewData);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const router = useRouter();
+  const [currentMarketIndex, setCurrentMarketIndex] = useState(0);
+  const [tiles, setTiles] = useState<any[]>([]);
+  const [overview, setOverview] = useState(defaultOverviewData);
 
-	useEffect(() => {
-		const isAuthenticated = localStorage.getItem("isAuthenticated");
-		if (!isAuthenticated) {
-			router.push("/login");
-		}
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("isAuthenticated");
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
 
-		document.body.classList.toggle("dark", isDarkMode);
-		document.body.classList.toggle("light", !isDarkMode);
-	}, [isDarkMode, router]);
+    document.body.classList.toggle("dark", isDarkMode);
+    document.body.classList.toggle("light", !isDarkMode);
+  }, [isDarkMode, router]);
 
-	const handleLogout = () => {
-		localStorage.removeItem("isAuthenticated");
-		router.push("/login");
-	};
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    router.push("/login");
+  };
 
-	const navigateToTab = (tab: string) => {
-		router.push(`/${tab}`);
-	};
+  const navigateToTab = (tab: string) => {
+    router.push(`/${tab}`);
+  };
 
-	const handleNewsClick = (url: string) => {
-		window.open(url, "_blank");
-	};
+  const handleNewsClick = (url: string) => {
+    window.open(url, "_blank");
+  };
 
-	const toggleTheme = () => {
-		setIsDarkMode(!isDarkMode);
-	};
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
-	// Build tiles from API using the symbol lists in marketData.ts
-	useEffect(() => {
-		const flatten = [
-			...standardMarketData.americas,
-			...standardMarketData.emea,
-			...standardMarketData.asiaPacific,
-		];
+  // Build tiles from dummy marketData only (no API)
+  useEffect(() => {
+    const flatten = [
+      ...standardMarketData.americas,
+      ...standardMarketData.emea,
+      ...standardMarketData.asiaPacific,
+    ];
 
-		const makeMiniSeriesFallback = (value: number, pct: number) => {
-			const points = 20;
-			const base = value;
-			const vol = Math.max(Math.abs(pct) * 0.003, 0.0005);
-			const arr: number[] = [];
-			let cur = base * (1 - (pct / 100) * 0.6);
-			for (let i = 0; i < points; i++) {
-				const drift = (pct >= 0 ? 1 : -1) * vol * base * (i / points) * 0.5;
-				const noise = (Math.random() - 0.5) * vol * base * 2;
-				cur = cur + drift + noise;
-				arr.push(cur);
-			}
-			arr[arr.length - 1] = base;
-			return arr;
-		};
+    const load = async () => {
+      const makeMiniSeriesFallback = (value: number, pct: number) => {
+        const points = 20;
+        const base = value;
+        const vol = Math.max(Math.abs(pct) * 0.003, 0.0005);
+        const arr: number[] = [];
+        let cur = base * (1 - (pct / 100) * 0.6);
+        for (let i = 0; i < points; i++) {
+          const drift = (pct >= 0 ? 1 : -1) * vol * base * (i / points) * 0.5;
+          const noise = (Math.random() - 0.5) * vol * base * 2;
+          cur = cur + drift + noise;
+          arr.push(cur);
+        }
+        arr[arr.length - 1] = base;
+        return arr;
+      };
 
-		const load = async () => {
-			try {
-				const now = new Date();
-				const from = new Date(now.getTime() - 60 * 60 * 1000); // last 60 minutes
+      const prepared = flatten.map((d) => ({
+        symbol: d.id,
+        name: d.id,
+        price: d.value,
+        change: d.change,
+        changePercent: d.pctChange,
+        chartData: makeMiniSeriesFallback(d.value, d.pctChange),
+      }));
+      setTiles(prepared);
+    };
 
-				const results = await Promise.all(
-					flatten.map(async (d) => {
-						const symbol = d.id;
-						try {
-							const latest = await getLatestCandles(symbol, 2);
-							const last = latest[latest.length - 1];
-							const prev = latest.length > 1 ? latest[latest.length - 2] : last;
-							const price = last?.close ?? d.value;
-							const change = price - (prev?.close ?? price);
-							const changePercent = (prev?.close ?? 0) !== 0 ? (change / (prev?.close as number)) * 100 : 0;
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-							const range = await getRangeCandles(symbol, from, now);
-							const chartData = range.length > 0 ? range.map((c) => c.close) : makeMiniSeriesFallback(price, changePercent);
+  // Overview stays on dummy defaultOverviewData
 
-							return {
-								symbol,
-								name: d.id,
-								price,
-								change,
-								changePercent,
-								chartData,
-							};
-						} catch (e) {
-							// Fallback to existing dummy values if API fails for a symbol
-							return {
-								symbol,
-								name: d.id,
-								price: d.value,
-								change: d.change,
-								changePercent: d.pctChange,
-								chartData: makeMiniSeriesFallback(d.value, d.pctChange),
-							};
-						}
-					})
-				);
+  return (
+    <div
+      className={
+        isDarkMode
+          ? "min-h-screen font-mono bg-black text-white"
+          : "min-h-screen font-mono bg-[#f0f0f0] text-black"
+      }
+    >
+      {/* Header */}
+      <div
+        className={`${
+          isDarkMode
+            ? "bg-black text-white"
+            : "bg-[#e0e0e0] text-black"
+        } px-2 py-1 flex items-center justify-between border-b ${
+          isDarkMode ? "border-gray-800" : "border-gray-300"
+        }`}
+      >
+        <div className="flex items-center gap-4">
+          <span className="text-yellow-500 text-xs sm:text-sm">
+            HOME
+          </span>
+          <button
+            onClick={() => navigateToTab("standard")}
+            className={`${
+              isDarkMode
+                ? "text-gray-400 hover:text-white"
+                : "text-gray-600 hover:text-black"
+            } text-xs sm:text-sm`}
+          >
+            STANDARD
+          </button>
+          <button
+            onClick={() => navigateToTab("forex")}
+            className={`${
+              isDarkMode
+                ? "text-gray-400 hover:text-white"
+                : "text-gray-600 hover:text-black"
+            } text-xs sm:text-sm`}
+          >
+            FOREX
+          </button>
+          <button
+            onClick={() => navigateToTab("crypto")}
+            className={`${
+              isDarkMode
+                ? "text-gray-400 hover:text-white"
+                : "text-gray-600 hover:text-black"
+            } text-xs sm:text-sm`}
+          >
+            CRYPTO
+          </button>
+          <button
+            onClick={() => navigateToTab("tab2")}
+            className={`${
+              isDarkMode
+                ? "text-gray-400 hover:text-white"
+                : "text-gray-600 hover:text-black"
+            } text-xs sm:text-sm`}
+          >
+            TAB 2
+          </button>
+          <button
+            onClick={() => navigateToTab("ai")}
+            className={`${
+              isDarkMode
+                ? "text-gray-400 hover:text-white"
+                : "text-gray-600 hover:text-black"
+            } text-xs sm:text-sm`}
+          >
+            AI
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Removed watchlist refresh controls */}
+          <div className="flex gap-1">
+            <button
+              onClick={() => {
+                if (document.fullscreenElement) {
+                  document.exitFullscreen();
+                } else {
+                  document.documentElement.requestFullscreen();
+                }
+              }}
+              className="hover:text-[#ff9800] transition-colors"
+            >
+              <Maximize2 className="h-3 w-3 sm:h-4 sm:w-4" />
+            </button>
+            <button
+              onClick={() => window.close()}
+              className="hover:text-red-500 transition-colors"
+            >
+              <X className="h-3 w-3 sm:h-4 sm:w-4" />
+            </button>
+          </div>
+          <button onClick={toggleTheme} className="ml-2">
+            {isDarkMode ? (
+              <Sun className="h-3 w-3 sm:h-4 sm:w-4" />
+            ) : (
+              <Moon className="h-3 w-3 sm:h-4 sm:w-4" />
+            )}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 px-2 py-0.5 text-white text-xs rounded ml-2"
+          >
+            LOGOUT
+          </button>
+        </div>
+      </div>
 
-				setTiles(results);
-			} catch (err) {
-				// In case of global failure, keep existing UI with dummy data
-				const prepared = flatten.map((d) => ({
-					symbol: d.id,
-					name: d.id,
-					price: d.value,
-					change: d.change,
-					changePercent: d.pctChange,
-					chartData: makeMiniSeriesFallback(d.value, d.pctChange),
-				}));
-				setTiles(prepared);
-			}
-		};
+      {/* Ticker Tape */}
+      <TickerTape />
 
-		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+      {/* Main Dashboard */}
+      <div className="grid grid-cols-12 gap-4 p-4 h-[calc(100vh-120px)]">
+        {/* Market Overview Carousel - Left Column */}
+        <div className="col-span-4 bg-black rounded-lg p-4">
+          <MarketOverviewCarousel
+            marketData={overview}
+            currentIndex={currentMarketIndex}
+            setCurrentIndex={setCurrentMarketIndex}
+            isDarkMode={isDarkMode}
+          />
+        </div>
 
-	// Build market overview from API (SPX, IXIC, DJI, UKX, N225)
-	useEffect(() => {
-		const symbols = [
-			{ name: "S&P 500", symbol: "SPX" },
-			{ name: "NASDAQ", symbol: "IXIC" },
-			{ name: "DOW JONES", symbol: "DJI" },
-			{ name: "FTSE 100", symbol: "UKX" },
-			{ name: "NIKKEI 225", symbol: "N225" },
-		];
-		const loadOverview = async () => {
-			try {
-				const now = new Date();
-				const from = new Date(now.getTime() - 60 * 60 * 1000);
-				const items = await Promise.all(
-					symbols.map(async (s) => {
-						try {
-							const latest = await getLatestCandles(s.symbol, 2);
-							const last = latest[latest.length - 1];
-							const prev = latest.length > 1 ? latest[latest.length - 2] : last;
-							const price = last?.close ?? 0;
-							const change = price - (prev?.close ?? price);
-							const changePercent = (prev?.close ?? 0) !== 0 ? (change / (prev?.close as number)) * 100 : 0;
+        {/* News - Middle Column */}
+        <div className="col-span-4 bg-black rounded-lg p-4">
+          <h2 className="text-white text-lg font-bold mb-4">
+            News
+          </h2>
+          <div className="space-y-4 overflow-y-auto h-[calc(100%-2rem)]">
+            {newsData.map((news, index) => (
+              <div
+                key={index}
+                className="border-b border-gray-600 pb-3 cursor-pointer hover:bg-gray-800 p-2 rounded transition-colors"
+                onClick={() => handleNewsClick(news.url)}
+              >
+                <h3 className="text-white text-sm font-medium mb-1 leading-tight">
+                  {news.title}
+                </h3>
+                <div className="text-xs text-gray-400">{news.time}</div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-							const range = await getRangeCandles(s.symbol, from, now);
-							const closes = range.map((c) => c.close);
-							const minV = closes.length ? Math.min(...closes) : price;
-							const maxV = closes.length ? Math.max(...closes) : price;
-							const dayRange = `${minV.toFixed(2)} - ${maxV.toFixed(2)}`;
-							const chartData = closes.map((v, idx) => ({ time: String(idx), value: v }));
-
-							return {
-								name: s.name,
-								symbol: s.symbol,
-								value: price,
-								change,
-								changePercent,
-								previousClose: prev?.close ?? price,
-								dayRange,
-								chartData,
-							};
-						} catch {
-							const fallback = defaultOverviewData.find((x) => x.symbol === s.symbol)!;
-							return { ...fallback };
-						}
-					})
-				);
-				setOverview(items);
-			} catch {
-				setOverview(defaultOverviewData);
-			}
-		};
-		loadOverview();
-	}, []);
-
-	return (
-		<div
-			className={`min-h-screen font-mono ${
-				isDarkMode
-					? "bg-black text-white"
-					: "bg-[#f0f0f0] text-black"
-			}`}
-		>
-			{/* Header */}
-			<div
-				className={`${
-					isDarkMode
-						? "bg-black text-white"
-						: "bg-[#e0e0e0] text-black"
-				} px-2 py-1 flex items-center justify-between border-b ${
-					isDarkMode ? "border-gray-800" : "border-gray-300"
-				}`}
-			>
-				<div className="flex items-center gap-4">
-					<span className="text-yellow-500 text-xs sm:text-sm">
-						HOME
-					</span>
-					<button
-						onClick={() => navigateToTab("standard")}
-						className={`${
-							isDarkMode
-								? "text-gray-400 hover:text-white"
-								: "text-gray-600 hover:text-black"
-						} text-xs sm:text-sm`}
-					>
-						STANDARD
-					</button>
-					<button
-						onClick={() => navigateToTab("forex")}
-						className={`${
-							isDarkMode
-								? "text-gray-400 hover:text-white"
-								: "text-gray-600 hover:text-black"
-						} text-xs sm:text-sm`}
-					>
-						FOREX
-					</button>
-					<button
-						onClick={() => navigateToTab("crypto")}
-						className={`${
-							isDarkMode
-								? "text-gray-400 hover:text-white"
-								: "text-gray-600 hover:text-black"
-						} text-xs sm:text-sm`}
-					>
-						CRYPTO
-					</button>
-					<button
-						onClick={() => navigateToTab("tab2")}
-						className={`${
-							isDarkMode
-								? "text-gray-400 hover:text-white"
-								: "text-gray-600 hover:text-black"
-						} text-xs sm:text-sm`}
-					>
-						TAB 2
-					</button>
-					<button
-						onClick={() => navigateToTab("ai")}
-						className={`${
-							isDarkMode
-								? "text-gray-400 hover:text-white"
-								: "text-gray-600 hover:text-black"
-						} text-xs sm:text-sm`}
-					>
-						AI
-					</button>
-				</div>
-				<div className="flex items-center gap-2">
-					{/* Removed watchlist refresh controls */}
-					<div className="flex gap-1">
-						<button
-							onClick={() => {
-								if (
-									document.fullscreenElement
-								) {
-									document.exitFullscreen();
-								} else {
-									document.documentElement.requestFullscreen();
-								}
-							}}
-							className="hover:text-[#ff9800] transition-colors"
-						>
-							<Maximize2 className="h-3 w-3 sm:h-4 sm:w-4" />
-						</button>
-						<button
-							onClick={() => window.close()}
-							className="hover:text-red-500 transition-colors"
-						>
-							<X className="h-3 w-3 sm:h-4 sm:w-4" />
-						</button>
-					</div>
-					<button onClick={toggleTheme} className="ml-2">
-						{isDarkMode ? (
-							<Sun className="h-3 w-3 sm:h-4 sm:w-4" />
-						) : (
-							<Moon className="h-3 w-3 sm:h-4 sm:w-4" />
-						)}
-					</button>
-					<button
-						onClick={handleLogout}
-						className="bg-red-600 px-2 py-0.5 text-white text-xs rounded ml-2"
-					>
-						LOGOUT
-					</button>
-				</div>
-			</div>
-
-			{/* Ticker Tape */}
-			<TickerTape />
-
-			{/* Main Dashboard */}
-			<div className="grid grid-cols-12 gap-4 p-4 h-[calc(100vh-120px)]">
-				{/* Market Overview Carousel - Left Column */}
-				<div className="col-span-4 bg-black rounded-lg p-4">
-					<MarketOverviewCarousel
-						marketData={overview}
-						currentIndex={currentMarketIndex}
-						setCurrentIndex={setCurrentMarketIndex}
-						isDarkMode={isDarkMode}
-					/>
-				</div>
-
-				{/* News - Middle Column */}
-				<div className="col-span-4 bg-black rounded-lg p-4">
-					<h2 className="text-white text-lg font-bold mb-4">
-						News
-					</h2>
-					<div className="space-y-4 overflow-y-auto h-[calc(100%-2rem)]">
-						{newsData.map((news, index) => (
-							<div
-								key={index}
-								className="border-b border-gray-600 pb-3 cursor-pointer hover:bg-gray-800 p-2 rounded transition-colors"
-								onClick={() =>
-									handleNewsClick(news.url)
-								}
-							>
-								<h3 className="text-white text-sm font-medium mb-1 leading-tight">
-									{news.title}
-								</h3>
-								<div className="text-xs text-gray-400">
-									{news.time}
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-
-				{/* My Watchlist - Right Column */}
-				<div className="col-span-4 bg-black rounded-lg p-4 flex flex-col">
-					<div className="flex items-center justify-between mb-3">
-						<h2 className="text-white text-lg font-bold">
-							My Watchlist
-						</h2>
-					</div>
-					<div
-						className="grid grid-cols-2 gap-3 overflow-y-auto pr-1"
-						style={{ maxHeight: "calc(100% - 2rem)" }}
-					>
-						{tiles.slice(0, 6).map((t, idx) => (
-							<StockTile
-								key={`${t.symbol}-${idx}`}
-								symbol={t.symbol}
-								name={t.name}
-								price={t.price}
-								change={t.change}
-								changePercent={t.changePercent}
-								chartData={t.chartData}
-							/>
-						))}
-					</div>
-				</div>
-			</div>
-		</div>
-	);
+        {/* My Watchlist - Right Column */}
+        <div className="col-span-4 bg-black rounded-lg p-4 flex flex-col">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-white text-lg font-bold">
+              My Watchlist
+            </h2>
+          </div>
+          <div
+            className="grid grid-cols-2 gap-3 overflow-y-auto pr-1"
+            style={{ maxHeight: "calc(100% - 2rem)" }}
+          >
+            {tiles.slice(0, 6).map((t, idx) => (
+              <StockTile
+                key={`${t.symbol}-${idx}`}
+                symbol={t.symbol}
+                name={t.name}
+                price={t.price}
+                change={t.change}
+                changePercent={t.changePercent}
+                chartData={t.chartData}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

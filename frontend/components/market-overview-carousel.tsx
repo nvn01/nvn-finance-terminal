@@ -1,6 +1,7 @@
 "use client"
 
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { useEffect, useMemo, useState } from "react"
 
 interface MarketOverviewCarouselProps {
   marketData: any[]
@@ -33,11 +34,28 @@ export function MarketOverviewCarousel({
   setCurrentIndex, 
   isDarkMode 
 }: MarketOverviewCarouselProps) {
-  const currentMarket = marketData[currentIndex]
-  const realisticChartData = generateRealisticChartData(
-    currentMarket.chartData, 
-    currentMarket.changePercent
-  )
+  if (!marketData || marketData.length === 0) {
+    return (
+      <div className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
+        No overview data.
+      </div>
+    )
+  }
+
+  const safeIndex = Math.max(0, Math.min(currentIndex, marketData.length - 1))
+  const currentMarket = marketData[safeIndex] || {}
+
+  // Avoid SSR/client mismatch: only add randomness after mount
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  const baseData = ((currentMarket as any).chartData as any[]) || []
+  const realisticChartData = useMemo(() => {
+    const cp = Number((currentMarket as any).changePercent) || 0
+    return mounted ? generateRealisticChartData(baseData, cp) : baseData
+  }, [mounted, baseData, (currentMarket as any).changePercent])
+
+  const nf = useMemo(() => new Intl.NumberFormat("en-US"), [])
 
   return (
     <div>
@@ -63,42 +81,42 @@ export function MarketOverviewCarousel({
 
       {/* Current Market Display */}
       <div className="mb-4">
-        <div className="text-sm text-gray-400 mb-1">{currentMarket.name}</div>
+        <div className="text-sm text-gray-400 mb-1">{currentMarket.name || "-"}</div>
         <div className="flex items-center gap-2 mb-2">
           <span
-            className={`text-2xl ${currentMarket.changePercent >= 0 ? "text-green-400" : "text-red-400"}`}
+            className={`text-2xl ${(Number(currentMarket.changePercent) || 0) >= 0 ? "text-green-400" : "text-red-400"}`}
           >
-            {currentMarket.changePercent >= 0 ? "▲" : "▼"}
+            {(Number(currentMarket.changePercent) || 0) >= 0 ? "▲" : "▼"}
           </span>
           <span className="text-white text-3xl font-bold">
-            {currentMarket.value.toLocaleString()}
+            {nf.format(Number((currentMarket as any).value || 0))}
           </span>
         </div>
         <div className="text-sm text-gray-300 grid grid-cols-3 gap-4">
           <div>
             <div className="text-gray-400">Previous Close</div>
-            <div>{currentMarket.previousClose.toLocaleString()}</div>
+            <div>{nf.format(Number((currentMarket as any).previousClose || 0))}</div>
           </div>
           <div>
             <div className="text-gray-400">Day Range</div>
-            <div>{currentMarket.dayRange}</div>
+            <div>{currentMarket.dayRange || "-"}</div>
           </div>
           <div>
             <div
               className={
-                currentMarket.changePercent >= 0 ? "text-green-400" : "text-red-400"
+                (Number(currentMarket.changePercent) || 0) >= 0 ? "text-green-400" : "text-red-400"
               }
             >
-              {currentMarket.changePercent >= 0 ? "+" : ""}
-              {currentMarket.change.toFixed(2)}
+              {(Number(currentMarket.changePercent) || 0) >= 0 ? "+" : ""}
+              {Number(currentMarket.change || 0).toFixed(2)}
             </div>
             <div
               className={
-                currentMarket.changePercent >= 0 ? "text-green-400" : "text-red-400"
+                (Number(currentMarket.changePercent) || 0) >= 0 ? "text-green-400" : "text-red-400"
               }
             >
-              {currentMarket.changePercent >= 0 ? "+" : ""}
-              {currentMarket.changePercent.toFixed(2)}%
+              {(Number(currentMarket.changePercent) || 0) >= 0 ? "+" : ""}
+              {Number(currentMarket.changePercent || 0).toFixed(2)}%
             </div>
           </div>
         </div>
@@ -107,14 +125,14 @@ export function MarketOverviewCarousel({
       {/* Chart with realistic variations */}
       <div className="h-64 bg-black rounded">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={realisticChartData}>
+          <LineChart data={realisticChartData || []}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
             <XAxis dataKey="time" stroke="#fff" fontSize={10} />
             <YAxis stroke="#fff" fontSize={10} />
             <Line
               type="monotone"
               dataKey="value"
-              stroke={currentMarket.changePercent >= 0 ? "#4ade80" : "#ef4444"}
+              stroke={(Number(currentMarket.changePercent) || 0) >= 0 ? "#4ade80" : "#ef4444"}
               strokeWidth={2}
               dot={false}
             />
