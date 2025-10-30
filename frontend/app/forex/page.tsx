@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { TickerTape } from "@/components/ticker-tape";
 import { RealTimeChart } from "@/components/real-time-chart";
-import { getLatestCandles } from "@/lib/api";
+import { useHydrateSection } from "@/lib/hooks";
 import { symbols } from "@/lib/symbols";
 
 const fixedColumnClass =
@@ -131,7 +131,7 @@ export default function ForexPage() {
 						{sectionNum} {title}
 					</div>
 				</th>
-				<th colSpan={9}></th>
+				<th colSpan={5}></th>
 			</tr>
 			{items.map((item) => (
 				<tr
@@ -269,23 +269,6 @@ export default function ForexPage() {
 						</span>
 					</td>
 					<td
-						className={`px-2 py-1 text-right text-xs hidden sm:table-cell border-r ${
-							isDarkMode
-								? "border-gray-600"
-								: "border-gray-400"
-						}`}
-					>
-						<span
-							className={
-								item.avat > 0
-									? "text-green-500"
-									: "text-red-500"
-							}
-						>
-							{item.avat.toFixed(2)}%
-						</span>
-					</td>
-					<td
 						className={`px-2 py-1 text-right ${
 							isDarkMode
 								? "text-yellow-100"
@@ -297,55 +280,6 @@ export default function ForexPage() {
 						}`}
 					>
 						{item.time}
-					</td>
-					<td
-						className={`px-2 py-1 text-right text-xs hidden md:table-cell border-r ${
-							isDarkMode
-								? "border-gray-600"
-								: "border-gray-400"
-						}`}
-					>
-						<span
-							className={
-								isDarkMode
-									? "text-yellow-100"
-									: "text-yellow-800"
-							}
-						>
-							N/A
-						</span>
-					</td>
-					<td
-						className={`px-2 py-1 text-right text-xs hidden md:table-cell border-r ${
-							isDarkMode
-								? "border-gray-600"
-								: "border-gray-400"
-						}`}
-					>
-						<span
-							className={
-								item.ytd > 0
-									? "text-green-500"
-									: "text-red-500"
-							}
-						>
-							{item.ytd > 0 ? "+" : ""}
-							{item.ytd.toFixed(2)}%
-						</span>
-					</td>
-					<td
-						className={`px-2 py-1 text-right text-xs hidden md:table-cell`}
-					>
-						<span
-							className={
-								item.ytdCur > 0
-									? "text-green-500"
-									: "text-red-500"
-							}
-						>
-							{item.ytdCur > 0 ? "+" : ""}
-							{item.ytdCur.toFixed(2)}%
-						</span>
 					</td>
 				</tr>
 			))}
@@ -367,38 +301,9 @@ export default function ForexPage() {
 		};
 	}, [timeframeDropdown, ytdDropdown, currencyDropdown]);
 
-	// Load latest price metrics from API and hydrate values
-	useEffect(() => {
-		const updateSection = async (items: any[]) => {
-			const updated = await Promise.all(
-				items.map(async (it) => {
-					const symbol = it.id;
-					try {
-						const latest = await getLatestCandles(symbol, 2);
-						const last = latest[latest.length - 1];
-						const prev = latest.length > 1 ? latest[latest.length - 2] : last;
-						const price = last?.close ?? 0;
-						const change = price - (prev?.close ?? price);
-						const pctChange = (prev?.close ?? 0) !== 0 ? (change / (prev?.close as number)) * 100 : 0;
-						const time = last?.ts ? new Date(last.ts).toLocaleTimeString() : it.time;
-						return { ...it, value: price, change, pctChange, time };
-					} catch {
-						return it;
-					}
-				})
-			);
-			return updated;
-		};
-
-		const load = async () => {
-			const major = await updateSection(dataState.major);
-			const emerging = await updateSection(dataState.emerging);
-			setDataState({ major, emerging });
-		};
-
-		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	// SWR hydration
+	const majorHydrated = useHydrateSection(dataState.major).data;
+	const emergingHydrated = useHydrateSection(dataState.emerging).data;
 
 	return (
 		<div
@@ -886,39 +791,7 @@ export default function ForexPage() {
 										: "border-gray-400"
 								}`}
 							>
-								Δ AVAT
-							</th>
-							<th
-								className={`px-2 py-1 text-right hidden sm:table-cell border-r ${
-									isDarkMode
-										? "border-gray-600"
-										: "border-gray-400"
-								}`}
-							>
 								Time
-							</th>
-							<th
-								className={`px-2 py-1 text-right hidden md:table-cell border-r ${
-									isDarkMode
-										? "border-gray-600"
-										: "border-gray-400"
-								}`}
-							>
-								Spread
-							</th>
-							<th
-								className={`px-2 py-1 text-right hidden md:table-cell border-r ${
-									isDarkMode
-										? "border-gray-600"
-										: "border-gray-400"
-								}`}
-							>
-								%YTD
-							</th>
-							<th
-								className={`px-2 py-1 text-right hidden md:table-cell`}
-							>
-								%YTDCur
 							</th>
 						</tr>
 					</thead>
@@ -926,12 +799,12 @@ export default function ForexPage() {
 					<tbody>
 						{renderSection(
 							"Major",
-							dataState.major,
+							majorHydrated,
 							"1)"
 						)}
 						{renderSection(
 							"emerging currencies",
-							dataState.emerging,
+							emergingHydrated,
 							"2)"
 						)}
 					</tbody>
@@ -939,7 +812,6 @@ export default function ForexPage() {
 			</div>
 
 			<button
-				onClick={() => setShowQuickActions(!showQuickActions)}
 				className="fixed bottom-6 right-6 bg-[#ff9800] hover:bg-[#e68900] text-black p-3 rounded-full shadow-lg transition-colors z-40"
 			>
 				<Activity className="h-6 w-6" />

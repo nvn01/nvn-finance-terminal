@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
+import { SWRConfig } from "swr"
 
 export const metadata: Metadata = {
   title: "Bloomberg Terminal",
@@ -15,7 +16,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-mono">{children}</body>
+      <body className="font-mono">
+        <SWRConfig value={{ dedupingInterval: 10000, revalidateOnFocus: true }}>
+          {children}
+        </SWRConfig>
+      </body>
     </html>
   )
 }

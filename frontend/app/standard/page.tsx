@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { TickerTape } from "@/components/ticker-tape";
 import { MarketTable } from "@/components/market-table";
-import { getLatestCandles } from "@/lib/api";
+import { useHydrateSection } from "@/lib/hooks";
 import { symbols } from "@/lib/symbols";
 
 export default function StandardPage() {
@@ -79,49 +79,20 @@ export default function StandardPage() {
 		document.body.classList.toggle("light", !isDarkMode);
 	}, [isDarkMode, router]);
 
-	// Fetch latest prices for all visible items to hydrate values from API
-	useEffect(() => {
-		const updateSection = async (items: any[]) => {
-			const updated = await Promise.all(
-				items.map(async (it) => {
-					const symbol = it.id;
-					try {
-						const latest = await getLatestCandles(symbol, 2);
-						const last = latest[latest.length - 1];
-						const prev = latest.length > 1 ? latest[latest.length - 2] : last;
-						const price = last?.close ?? 0;
-						const change = price - (prev?.close ?? price);
-						const pctChange = (prev?.close ?? 0) !== 0 ? (change / (prev?.close as number)) * 100 : 0;
-						const time = last?.ts ? new Date(last.ts).toLocaleTimeString() : it.time;
-						return { ...it, value: price, change, pctChange, time };
-					} catch {
-						return it; // keep zeros on failure
-					}
-				})
-			);
-			return updated;
-		};
+	// Hydrate via SWR hooks
+	const stdAmer = useHydrateSection(allMarketData.standard.americas).data;
+	const stdEmea = useHydrateSection(allMarketData.standard.emea).data;
+	const stdAsia = useHydrateSection(allMarketData.standard.asiaPacific).data;
+	const fxMajor = useHydrateSection(allMarketData.forex.major).data;
+	const fxEmerg = useHydrateSection(allMarketData.forex.emerging).data;
+	const cMajor = useHydrateSection(allMarketData.crypto.major).data;
+	const cAlt = useHydrateSection(allMarketData.crypto.altcoins).data;
 
-		const loadAll = async () => {
-			const std = {
-				americas: await updateSection(allMarketData.standard.americas),
-				emea: await updateSection(allMarketData.standard.emea),
-				asiaPacific: await updateSection(allMarketData.standard.asiaPacific),
-			};
-			const fx = {
-				major: await updateSection(allMarketData.forex.major),
-				emerging: await updateSection(allMarketData.forex.emerging),
-			};
-			const crypto = {
-				major: await updateSection(allMarketData.crypto.major),
-				altcoins: await updateSection(allMarketData.crypto.altcoins),
-			};
-			setAllMarketData({ standard: std, forex: fx, crypto });
-		};
-
-		loadAll();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	const hydratedAll = {
+		standard: { americas: stdAmer, emea: stdEmea, asiaPacific: stdAsia },
+		forex: { major: fxMajor, emerging: fxEmerg },
+		crypto: { major: cMajor, altcoins: cAlt },
+	};
 
 	const toggleTheme = () => {
 		setIsDarkMode(!isDarkMode);
@@ -610,7 +581,7 @@ export default function StandardPage() {
 				isDarkMode={isDarkMode}
 				selectedMarkets={selectedMarkets}
 				onToggleMarketSelection={toggleMarketSelection}
-				marketData={allMarketData}
+				marketData={hydratedAll}
 			/>
 
 			<button

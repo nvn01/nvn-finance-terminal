@@ -21,6 +21,30 @@ export type Signal = {
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const __ttlMs = 10000;
+const __cache = new Map<string, { t: number; d: any }>();
+const __inflight = new Map<string, Promise<any>>();
+
+function __key(path: string) {
+  return path;
+}
+
+async function __cached<T>(path: string, fetcher: () => Promise<T>): Promise<T> {
+  const k = __key(path);
+  const now = Date.now();
+  const hit = __cache.get(k);
+  if (hit && now < hit.t) return hit.d as T;
+  const fly = __inflight.get(k);
+  if (fly) return (await fly) as T;
+  const p = (async () => {
+    const v = await fetcher();
+    __cache.set(k, { t: now + __ttlMs, d: v });
+    __inflight.delete(k);
+    return v;
+  })();
+  __inflight.set(k, p);
+  return (await p) as T;
+}
 
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
@@ -42,7 +66,8 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
 
 export async function getLatestCandles(symbol: string, limit = 200): Promise<Candle[]> {
   const q = new URLSearchParams({ symbol, limit: String(limit) });
-  return http<Candle[]>(`/candles/latest?${q.toString()}`);
+  const path = `/candles/latest?${q.toString()}`;
+  return __cached<Candle[]>(path, () => http<Candle[]>(path));
 }
 
 export async function getRangeCandles(symbol: string, from: Date, to: Date): Promise<Candle[]> {
@@ -51,7 +76,8 @@ export async function getRangeCandles(symbol: string, from: Date, to: Date): Pro
     from: from.toISOString(),
     to: to.toISOString(),
   });
-  return http<Candle[]>(`/candles/range?${q.toString()}`);
+  const path = `/candles/range?${q.toString()}`;
+  return __cached<Candle[]>(path, () => http<Candle[]>(path));
 }
 
 export async function getSignals(symbol: string, limit = 50): Promise<Signal[]> {

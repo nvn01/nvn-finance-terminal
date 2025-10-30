@@ -103,7 +103,7 @@ export function MarketTable({
 						{sectionNum} {title}
 					</div>
 				</th>
-				<th colSpan={9}></th>
+				<th colSpan={5}></th>
 			</tr>
 			{items.map((item) => (
 				<tr
@@ -265,23 +265,6 @@ export function MarketTable({
 						</span>
 					</td>
 					<td
-						className={`px-2 py-1 text-right text-xs hidden sm:table-cell border-r ${
-							isDarkMode
-								? "border-gray-600"
-								: "border-gray-400"
-						}`}
-					>
-						<span
-							className={
-								item.avat > 0
-									? "text-green-500"
-									: "text-red-500"
-							}
-						>
-							{item.avat.toFixed(2)}%
-						</span>
-					</td>
-					<td
 						className={`px-2 py-1 text-right ${
 							isDarkMode
 								? "text-yellow-100"
@@ -293,55 +276,6 @@ export function MarketTable({
 						}`}
 					>
 						{item.time}
-					</td>
-					<td
-						className={`px-2 py-1 text-right text-xs hidden md:table-cell border-r ${
-							isDarkMode
-								? "border-gray-600"
-								: "border-gray-400"
-						}`}
-					>
-						<span
-							className={
-								isDarkMode
-									? "text-yellow-100"
-									: "text-yellow-800"
-							}
-						>
-							{item.advDcl || "N/A"}
-						</span>
-					</td>
-					<td
-						className={`px-2 py-1 text-right text-xs hidden md:table-cell border-r ${
-							isDarkMode
-								? "border-gray-600"
-								: "border-gray-400"
-						}`}
-					>
-						<span
-							className={
-								item.ytd > 0
-									? "text-green-500"
-									: "text-red-500"
-							}
-						>
-							{item.ytd > 0 ? "+" : ""}
-							{item.ytd.toFixed(2)}%
-						</span>
-					</td>
-					<td
-						className={`px-2 py-1 text-right text-xs hidden md:table-cell`}
-					>
-						<span
-							className={
-								item.ytdCur > 0
-									? "text-green-500"
-									: "text-red-500"
-							}
-						>
-							{item.ytdCur > 0 ? "+" : ""}
-							{item.ytdCur.toFixed(2)}%
-						</span>
 					</td>
 				</tr>
 			))}
@@ -489,39 +423,7 @@ export function MarketTable({
 									: "border-gray-400"
 							}`}
 						>
-							Δ AVAT
-						</th>
-						<th
-							className={`px-2 py-1 text-right hidden sm:table-cell border-r ${
-								isDarkMode
-									? "border-gray-600"
-									: "border-gray-400"
-							}`}
-						>
 							Time
-						</th>
-						<th
-							className={`px-2 py-1 text-right hidden md:table-cell border-r ${
-								isDarkMode
-									? "border-gray-600"
-									: "border-gray-400"
-							}`}
-						>
-							Adv/Dcl
-						</th>
-						<th
-							className={`px-2 py-1 text-right hidden md:table-cell border-r ${
-								isDarkMode
-									? "border-gray-600"
-									: "border-gray-400"
-							}`}
-						>
-							%YTD
-						</th>
-						<th
-							className={`px-2 py-1 text-right hidden md:table-cell`}
-						>
-							%YTDCur
 						</th>
 					</tr>
 				</thead>
