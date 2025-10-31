@@ -4,6 +4,13 @@ export const symbols = {
     emea: ["Euro Stoxx 50", "FTSE 100", "CAC 40", "DAX", "IBEX 35", "FTSE MIB", "OMX STKH30", "SWISS MKT"],
     asiaPacific: ["NIKKEI", "HANG SENG", "CSI 300", "S&P/ASX 200"],
   },
+  stocks: {
+    tech: [
+      "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "NFLX",
+      "AMD", "INTC", "AVGO", "QCOM", "CRM", "ORCL", "ADBE", "CSCO",
+      "PYPL", "SQ", "V", "MA"
+    ],
+  },
   forex: {
     major: ["XAUUSD", "USDJPY", "USDCHF", "USDCAD", "US30", "NZDUSD", "NZDJPY", "GBPUSD"],
     emerging: ["GBPCHF", "GBPAUD", "EURUSD", "EURJPY", "EURCHF", "AUDUSD", "AUDJPY"],

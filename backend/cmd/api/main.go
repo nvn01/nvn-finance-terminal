@@ -138,11 +138,29 @@ func main() {
 
     r.Use(cors.New(cors.Config{
         AllowOrigins:     allowOrigins,
-        AllowMethods:     []string{"GET", "POST", "OPTIONS"},
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
         AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
         ExposeHeaders:    []string{"Content-Type"},
         AllowCredentials: true,
-        MaxAge:           12 * time.Hour,
+        AllowWildcard:    true,
+        AllowOriginFunc: func(origin string) bool {
+            // Always allow localhost/127.0.0.1 for development
+            if len(origin) >= 16 && (origin[:16] == "http://localhost" || origin[:16] == "http://127.0.0.1") {
+                return true
+            }
+            // If FRONTEND_ORIGINS is set, check against the list
+            if rawOrigins != "" {
+                for _, allowed := range allowOrigins {
+                    if origin == allowed {
+                        return true
+                    }
+                }
+                return false
+            }
+            // Otherwise allow all for development
+            return true
+        },
+        MaxAge: 12 * time.Hour,
     }))
 
     r.GET("/health", func(c *gin.Context) {

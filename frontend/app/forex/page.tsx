@@ -344,6 +344,16 @@ export default function ForexPage() {
 					>
 						STANDARD
 					</button>
+					<button
+						onClick={() => navigateToTab("stocks")}
+						className={`${
+							isDarkMode
+								? "text-gray-400 hover:text-white"
+								: "text-gray-600 hover:text-black"
+						} text-xs sm:text-sm`}
+					>
+						STOCKS
+					</button>
 					<span className="text-yellow-500 text-xs sm:text-sm">
 						FOREX
 					</span>

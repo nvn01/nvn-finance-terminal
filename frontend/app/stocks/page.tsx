@@ -24,15 +24,15 @@ import { symbols } from "@/lib/symbols";
 const fixedColumnClass =
 	"w-[120px] sm:w-[140px] whitespace-nowrap overflow-hidden text-ellipsis";
 
-export default function CryptoPage() {
+export default function StocksPage() {
 	const [isDarkMode, setIsDarkMode] = useState(true);
 	const router = useRouter();
 	const [timeframeDropdown, setTimeframeDropdown] = useState(false);
 	const [ytdDropdown, setYtdDropdown] = useState(false);
 	const [currencyDropdown, setCurrencyDropdown] = useState(false);
-	const [selectedTimeframe, setSelectedTimeframe] = useState("24H");
+	const [selectedTimeframe, setSelectedTimeframe] = useState("1D");
 	const [selectedYtd, setSelectedYtd] = useState("%Chg YTD");
-	const [selectedCurrency, setSelectedCurrency] = useState("USDT");
+	const [selectedCurrency, setSelectedCurrency] = useState("USD");
 	const [showQuickActions, setShowQuickActions] = useState(false);
 	const [selectedMarkets, setSelectedMarkets] = useState<string[]>([]);
 	const makeItem = (id: string) => ({
@@ -48,8 +48,7 @@ export default function CryptoPage() {
 		ytdCur: 0,
 	});
 	const [dataState, setDataState] = useState({
-		major: symbols.crypto.major.map(makeItem),
-		altcoins: symbols.crypto.altcoins.map(makeItem),
+		tech: symbols.stocks.tech.map(makeItem),
 	});
 
 	useEffect(() => {
@@ -188,7 +187,7 @@ export default function CryptoPage() {
 											""
 										);
 									router.push(
-										`/crypto/${symbolSlug}`
+										`/stocks/${symbolSlug}`
 									);
 								}}
 								className="text-[#ff9800] text-xs hover:underline text-left"
@@ -228,12 +227,7 @@ export default function CryptoPage() {
 								: "border-gray-400"
 						}`}
 					>
-						{item.value < 1
-							? item.value.toFixed(6)
-							: item.value.toLocaleString("en-US", {
-									minimumFractionDigits: 2,
-									maximumFractionDigits: 2,
-							  })}
+						{item.value.toFixed(2)}
 					</td>
 					<td
 						className={`px-2 py-1 text-right text-xs border-r ${
@@ -250,9 +244,7 @@ export default function CryptoPage() {
 							}
 						>
 							{item.change > 0 ? "+" : ""}
-							{Math.abs(item.change) < 1
-								? item.change.toFixed(6)
-								: item.change.toFixed(2)}
+							{item.change.toFixed(2)}
 						</span>
 					</td>
 					<td
@@ -307,8 +299,7 @@ export default function CryptoPage() {
 	}, [timeframeDropdown, ytdDropdown, currencyDropdown]);
 
 	// SWR hydration
-	const majorHydrated = useHydrateSection(dataState.major).data;
-	const altHydrated = useHydrateSection(dataState.altcoins).data;
+	const techHydrated = useHydrateSection(dataState.tech).data;
 
 	return (
 		<div
@@ -349,16 +340,9 @@ export default function CryptoPage() {
 					>
 						STANDARD
 					</button>
-					<button
-						onClick={() => navigateToTab("stocks")}
-						className={`${
-							isDarkMode
-								? "text-gray-400 hover:text-white"
-								: "text-gray-600 hover:text-black"
-						} text-xs sm:text-sm`}
-					>
+					<span className="text-yellow-500 text-xs sm:text-sm">
 						STOCKS
-					</button>
+					</span>
 					<button
 						onClick={() => navigateToTab("forex")}
 						className={`${
@@ -369,9 +353,16 @@ export default function CryptoPage() {
 					>
 						FOREX
 					</button>
-					<span className="text-yellow-500 text-xs sm:text-sm">
+					<button
+						onClick={() => navigateToTab("crypto")}
+						className={`${
+							isDarkMode
+								? "text-gray-400 hover:text-white"
+								: "text-gray-600 hover:text-black"
+						} text-xs sm:text-sm`}
+					>
 						CRYPTO
-					</span>
+					</button>
 					<button
 						onClick={() => navigateToTab("tab2")}
 						className={`${
@@ -447,7 +438,7 @@ export default function CryptoPage() {
 					<ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
 				</button>
 				<button className="flex items-center gap-1 hover:text-[#ff9800] transition-colors">
-					<span>Crypto Overview</span>
+					<span>Stocks Overview</span>
 					<ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
 				</button>
 				<span
@@ -460,12 +451,12 @@ export default function CryptoPage() {
 					|
 				</span>
 				<button className="flex items-center gap-1 hover:text-[#ff9800] transition-colors">
-					<span>CRYPTO</span>
+					<span>EQUITY</span>
 					<ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
 				</button>
 				<button className="flex items-center gap-1 hover:text-[#ff9800] transition-colors">
 					<span className="hidden sm:inline">
-						Blockchain Functions
+						Stock Functions
 					</span>
 					<ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
 				</button>
@@ -492,35 +483,35 @@ export default function CryptoPage() {
 					isDarkMode ? "bg-[#1a1a1a]" : "bg-[#e6e6e6]"
 				} px-2 py-1 text-[#ff9800] text-xs sm:text-sm`}
 			>
-				<span className="font-bold">Crypto Markets</span>
+				<span className="font-bold">Stock Markets</span>
 
 				<label className="flex items-center gap-1">
 					<input
 						type="checkbox"
 						className="h-3 w-3 accent-gray-500"
 					/>
-					<span>Top 100</span>
+					<span>Tech</span>
 				</label>
 				<label className="flex items-center gap-1">
 					<input
 						type="checkbox"
 						className="h-3 w-3 accent-gray-500"
 					/>
-					<span>DeFi</span>
+					<span>Finance</span>
 				</label>
 				<label className="flex items-center gap-1">
 					<input
 						type="checkbox"
 						className="h-3 w-3 accent-gray-500"
 					/>
-					<span>NFT</span>
+					<span>Healthcare</span>
 				</label>
 				<label className="flex items-center gap-1">
 					<input
 						type="checkbox"
 						className="h-3 w-3 accent-gray-500"
 					/>
-					<span>Meme Coins</span>
+					<span>Energy</span>
 				</label>
 				<label className="flex items-center gap-1">
 					<input
@@ -555,12 +546,12 @@ export default function CryptoPage() {
 							} border rounded shadow-lg z-10 min-w-[80px]`}
 						>
 							{[
-								"1H",
-								"4H",
-								"24H",
-								"7D",
-								"30D",
-								"90D",
+								"1D",
+								"5D",
+								"10D",
+								"1M",
+								"3M",
+								"6M",
 								"1Y",
 							].map((timeframe) => (
 								<button
@@ -664,12 +655,13 @@ export default function CryptoPage() {
 							} border rounded shadow-lg z-10 min-w-[80px]`}
 						>
 							{[
-								"USDT",
-								"BTC",
-								"ETH",
-								"BNB",
 								"USD",
 								"EUR",
+								"GBP",
+								"JPY",
+								"CAD",
+								"AUD",
+								"CHF",
 							].map((currency) => (
 								<button
 									key={currency}
@@ -712,7 +704,7 @@ export default function CryptoPage() {
 				>
 					<div className="flex items-center gap-4">
 						<span className="text-sm font-medium">
-							{selectedMarkets.length} coins
+							{selectedMarkets.length} stocks
 							selected
 						</span>
 						<button className="bg-[#ff9800] hover:bg-[#e68900] px-3 py-1 text-black text-sm rounded transition-colors">
@@ -756,7 +748,7 @@ export default function CryptoPage() {
 										: "border-gray-400"
 								}`}
 							>
-								Cryptocurrency
+								Stock Symbol
 							</th>
 							<th
 								className={`px-2 py-1 text-center ${
@@ -769,7 +761,7 @@ export default function CryptoPage() {
 										: "border-gray-400"
 								}`}
 							>
-								24H Chart
+								1 Day
 							</th>
 							<th
 								className={`px-2 py-1 text-right border-r ${
@@ -787,7 +779,7 @@ export default function CryptoPage() {
 										: "border-gray-400"
 								}`}
 							>
-								24H Chg
+								Net Chg
 							</th>
 							<th
 								className={`px-2 py-1 text-right border-r ${
@@ -811,8 +803,7 @@ export default function CryptoPage() {
 					</thead>
 
 					<tbody>
-						{renderSection("major", majorHydrated, "1)")}
-						{renderSection("alternative", altHydrated, "2)")}
+						{renderSection("Tech Stocks", techHydrated, "1)")}
 					</tbody>
 				</table>
 			</div>
@@ -828,16 +819,16 @@ export default function CryptoPage() {
 				<div className="fixed bottom-20 right-6 bg-[#1a1a1a] border border-gray-700 rounded-lg shadow-lg z-50 p-4 w-48">
 					<div className="space-y-2">
 						<button className="w-full text-left text-sm hover:text-[#ff9800] py-1">
-							DeFi Analytics
+							Stock Screener
 						</button>
 						<button className="w-full text-left text-sm hover:text-[#ff9800] py-1">
-							NFT Tracker
+							Earnings Calendar
 						</button>
 						<button className="w-full text-left text-sm hover:text-[#ff9800] py-1">
-							Yield Farming
+							Portfolio Tracker
 						</button>
 						<button className="w-full text-left text-sm hover:text-[#ff9800] py-1">
-							Fear & Greed Index
+							Market Movers
 						</button>
 						<hr className="border-gray-600" />
 						<button className="w-full text-left text-sm hover:text-[#ff9800] py-1">

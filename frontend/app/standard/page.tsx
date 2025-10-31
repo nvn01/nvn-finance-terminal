@@ -171,6 +171,16 @@ export default function StandardPage() {
 						STANDARD
 					</span>
 					<button
+						onClick={() => navigateToTab("stocks")}
+						className={`${
+							isDarkMode
+								? "text-gray-400 hover:text-white"
+								: "text-gray-600 hover:text-black"
+						} text-xs sm:text-sm`}
+					>
+						STOCKS
+					</button>
+					<button
 						onClick={() => navigateToTab("forex")}
 						className={`${
 							isDarkMode
