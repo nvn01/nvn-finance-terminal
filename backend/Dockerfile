@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Build stage
-FROM golang:1.24-alpine AS builder
+FROM golang:1.23-alpine AS builder
 WORKDIR /app
 
 # Enable static build
@@ -10,8 +10,7 @@ ENV GOTOOLCHAIN=auto
 
 # Pre-cache depsz
 COPY go.mod .
-# If you had go.sum, copy it too (optional)
-# COPY go.sum .
+COPY go.sum .
 RUN go mod download
 
 # Copy source

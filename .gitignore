@@ -18,6 +18,7 @@ backend/*.out
 
 # Docker and compose
 docker-compose.override.yml
+/docker-compose-*.yml
 **/.dockerignore
 
 # Env files (keep secrets out of git)

@@ -9,6 +9,8 @@ const nextConfig = {
 	images: {
 		unoptimized: true,
 	},
+	// Produce a self-contained server output for Docker runtime
+	output: "standalone",
 	// Force stable hashing to avoid Node 22 wasm hashing crash in webpack
 	webpack: (config) => {
 		config.output = config.output || {};
