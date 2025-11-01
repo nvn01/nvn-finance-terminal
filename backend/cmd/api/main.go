@@ -55,6 +55,16 @@ type Signal struct {
     CreatedAt       time.Time  `json:"created_at"`
 }
 
+// CandlePayload is the expected JSON for a single candle in an upsert batch
+type CandlePayload struct {
+    Ts     time.Time `json:"ts"`     // Must be in ISO8601 format: "2025-10-31T22:59:00Z"`
+    Open   float64   `json:"open"`
+    High   float64   `json:"high"`
+    Low    float64   `json:"low"`
+    Close  float64   `json:"close"`
+    Volume float64   `json:"volume"`
+}
+
 func lookupInstrumentID(ctx context.Context, pool *pgxpool.Pool, symbol string) (int64, error) {
     var id int64
     err := pool.QueryRow(ctx, `SELECT id FROM market.instruments WHERE symbol=$1`, symbol).Scan(&id)
@@ -258,6 +268,72 @@ func main() {
             return
         }
         c.JSON(http.StatusOK, out)
+    })
+
+    // POST /candles/upsert
+    // Accepts a batch of candles for a single symbol and upserts them.
+    // Duplicates (based on instrument_id, ts) are automatically ignored.
+    r.POST("/candles/upsert", func(c *gin.Context) {
+        var body struct {
+            Symbol  string          `json:"symbol"`
+            Candles []CandlePayload `json:"candles"`
+        }
+
+        if err := c.BindJSON(&body); err != nil {
+            writeError(c, http.StatusBadRequest, "invalid JSON", err.Error())
+            return
+        }
+        if body.Symbol == "" {
+            writeError(c, http.StatusBadRequest, "symbol is required", "")
+            return
+        }
+        if len(body.Candles) == 0 {
+            writeError(c, http.StatusBadRequest, "candles array is required", "")
+            return
+        }
+
+        // Get the instrument ID for this symbol
+        instID, err := lookupInstrumentID(c, pool, body.Symbol)
+        if err != nil {
+            writeError(c, http.StatusBadRequest, "invalid symbol", err.Error())
+            return
+        }
+
+        // Use pgx.Batch for high-performance upsert
+        batch := &pgx.Batch{}
+        sql := `
+            INSERT INTO market.timeframe_1m (instrument_id, ts, open, high, low, close, volume)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (instrument_id, ts) DO NOTHING
+        `
+
+        for _, candle := range body.Candles {
+            batch.Queue(sql, instID, candle.Ts, candle.Open, candle.High, candle.Low, candle.Close, candle.Volume)
+        }
+
+        // Send the batch to the database in a single transaction
+        br := pool.SendBatch(c, batch)
+        defer br.Close()
+
+        // Check for errors from each query in the batch
+        insertedCount := 0
+        for i := 0; i < len(body.Candles); i++ {
+            ct, err := br.Exec()
+            if err != nil {
+                // If one fails, stop and report the error
+                writeError(c, http.StatusInternalServerError, "batch insert error", err.Error())
+                return
+            }
+            insertedCount += int(ct.RowsAffected())
+        }
+
+        // On success
+        c.JSON(http.StatusCreated, gin.H{
+            "status":   "ok",
+            "symbol":   body.Symbol,
+            "received": len(body.Candles),
+            "inserted": insertedCount,
+        })
     })
 
     // GET /signals?symbol=SYMBOL&limit=50
