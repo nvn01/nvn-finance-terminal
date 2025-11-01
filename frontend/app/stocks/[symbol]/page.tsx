@@ -18,7 +18,7 @@ import {
 	HelpCircle,
 	Activity,
 } from "lucide-react";
-import { marketData, forexData, cryptoData } from "@/lib/marketData";
+import { stocksData } from "@/lib/marketData";
 
 const generateChartData = (symbol: string) => {
 	const data = [] as Array<{ time: string; price: number; volume: number }>;
@@ -42,24 +42,8 @@ const generateChartData = (symbol: string) => {
 	return data;
 };
 
-const getMarketInfo = (marketType: string, symbol: string) => {
-	let allData: any[] = [];
-
-	switch (marketType) {
-		case "standard":
-			allData = [
-				...marketData.americas,
-				...marketData.emea,
-				...marketData.asiaPacific,
-			];
-			break;
-		case "forex":
-			allData = [...forexData.major, ...forexData.emerging];
-			break;
-		case "crypto":
-			allData = [...cryptoData.major, ...cryptoData.altcoins];
-			break;
-	}
+const getMarketInfo = (symbol: string) => {
+	const allData = [...stocksData.tech];
 
 	return allData.find(
 		(item) =>
@@ -68,26 +52,14 @@ const getMarketInfo = (marketType: string, symbol: string) => {
 	);
 };
 
-export default function MarketDetailPage() {
+export default function StockDetailPage() {
 	const [isDarkMode, setIsDarkMode] = useState(true);
 	const router = useRouter();
 	const params = useParams();
-	const routeParams = params as Record<string, string>;
-	const marketType = (routeParams.marketType ||
-		(typeof window !== "undefined" &&
-		window.location.pathname.startsWith("/crypto")
-			? "crypto"
-			: typeof window !== "undefined" &&
-			  window.location.pathname.startsWith("/forex")
-			? "forex"
-			: "standard")) as string;
-	const symbol = (routeParams.symbol ||
-		(typeof window !== "undefined"
-			? window.location.pathname.split("/").pop()
-			: "")) as string;
+	const symbol = params.symbol as string;
 
-	const marketInfo = getMarketInfo(marketType as string, symbol as string);
-	const chartData = generateChartData(symbol as string);
+	const marketInfo = getMarketInfo(symbol);
+	const chartData = generateChartData(symbol);
 
 	const [showNewsPanel, setShowNewsPanel] = useState(false);
 	const [showAlerts, setShowAlerts] = useState(false);
@@ -113,12 +85,12 @@ export default function MarketDetailPage() {
 	};
 
 	const goBack = () => {
-		if (marketType === "crypto") router.push("/crypto");
-		else if (marketType === "forex") router.push("/forex");
-		else router.push("/standard");
+		router.push("/stocks");
 	};
 
 	const exportChartData = () => {
+		if (!marketInfo) return;
+		
 		const csvContent = [
 			["Time", "Price", "Volume"],
 			...chartData.map((item) => [
@@ -153,7 +125,7 @@ export default function MarketDetailPage() {
 				<div className="flex items-center justify-center h-96">
 					<div className="text-center">
 						<h1 className="text-2xl font-bold mb-4">
-							Market Not Found
+							Stock Not Found
 						</h1>
 						<button
 							onClick={goBack}
@@ -197,9 +169,39 @@ export default function MarketDetailPage() {
 					</button>
 					<button
 						onClick={() => navigateToTab("standard")}
-						className="text-yellow-500 text-xs sm:text-sm"
+						className={`${
+							isDarkMode
+								? "text-gray-400 hover:text-white"
+								: "text-gray-600 hover:text-black"
+						} text-xs sm:text-sm`}
 					>
 						STANDARD
+					</button>
+					<button
+						onClick={() => navigateToTab("stocks")}
+						className="text-yellow-500 text-xs sm:text-sm"
+					>
+						STOCKS
+					</button>
+					<button
+						onClick={() => navigateToTab("forex")}
+						className={`${
+							isDarkMode
+								? "text-gray-400 hover:text-white"
+								: "text-gray-600 hover:text-black"
+						} text-xs sm:text-sm`}
+					>
+						FOREX
+					</button>
+					<button
+						onClick={() => navigateToTab("crypto")}
+						className={`${
+							isDarkMode
+								? "text-gray-400 hover:text-white"
+								: "text-gray-600 hover:text-black"
+						} text-xs sm:text-sm`}
+					>
+						CRYPTO
 					</button>
 					<button
 						onClick={() => navigateToTab("tab2")}
@@ -335,11 +337,7 @@ export default function MarketDetailPage() {
 									: "text-gray-600"
 							}`}
 						>
-							{marketType === "standard"
-								? "Stock Index"
-								: marketType === "forex"
-								? "Currency Pair"
-								: "Cryptocurrency"}
+							Stock
 						</p>
 					</div>
 					<div className="flex items-center gap-6">

@@ -177,7 +177,7 @@ export function MarketTable({
 										);
 									} else {
 										router.push(
-											`/standard/standard/${symbolSlug}`
+											`/standard/${symbolSlug}`
 										);
 									}
 								}}

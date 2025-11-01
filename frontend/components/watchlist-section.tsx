@@ -60,7 +60,7 @@ export function WatchlistSection({
 										}
 										onClick={() =>
 											router.push(
-												`/standard/standard/${stock.symbol.toLowerCase()}`
+												`/standard/${stock.symbol.toLowerCase()}`
 											)
 										}
 									/>
@@ -98,7 +98,7 @@ export function WatchlistSection({
 										}
 										onClick={() =>
 											router.push(
-												`/standard/standard/${stock.symbol.toLowerCase()}`
+												`/standard/${stock.symbol.toLowerCase()}`
 											)
 										}
 									/>
@@ -135,7 +135,7 @@ export function WatchlistSection({
 										}
 										onClick={() =>
 											router.push(
-												`/standard/standard/${stock.symbol.toLowerCase()}`
+												`/standard/${stock.symbol.toLowerCase()}`
 											)
 										}
 									/>

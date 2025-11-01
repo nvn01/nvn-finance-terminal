@@ -18,7 +18,7 @@ import {
 	HelpCircle,
 	Activity,
 } from "lucide-react";
-import { cryptoData } from "@/lib/marketData";
+import { marketData } from "@/lib/marketData";
 
 const generateChartData = (symbol: string) => {
 	const data = [] as Array<{ time: string; price: number; volume: number }>;
@@ -43,7 +43,11 @@ const generateChartData = (symbol: string) => {
 };
 
 const getMarketInfo = (symbol: string) => {
-	const allData = [...cryptoData.major, ...cryptoData.altcoins];
+	const allData = [
+		...marketData.americas,
+		...marketData.emea,
+		...marketData.asiaPacific,
+	];
 
 	return allData.find(
 		(item) =>
@@ -52,7 +56,7 @@ const getMarketInfo = (symbol: string) => {
 	);
 };
 
-export default function CryptoDetailPage() {
+export default function StandardDetailPage() {
 	const [isDarkMode, setIsDarkMode] = useState(true);
 	const router = useRouter();
 	const params = useParams();
@@ -85,7 +89,7 @@ export default function CryptoDetailPage() {
 	};
 
 	const goBack = () => {
-		router.push("/crypto");
+		router.push("/standard");
 	};
 
 	const exportChartData = () => {
@@ -169,11 +173,7 @@ export default function CryptoDetailPage() {
 					</button>
 					<button
 						onClick={() => navigateToTab("standard")}
-						className={`${
-							isDarkMode
-								? "text-gray-400 hover:text-white"
-								: "text-gray-600 hover:text-black"
-						} text-xs sm:text-sm`}
+						className="text-yellow-500 text-xs sm:text-sm"
 					>
 						STANDARD
 					</button>
@@ -199,7 +199,11 @@ export default function CryptoDetailPage() {
 					</button>
 					<button
 						onClick={() => navigateToTab("crypto")}
-						className="text-yellow-500 text-xs sm:text-sm"
+						className={`${
+							isDarkMode
+								? "text-gray-400 hover:text-white"
+								: "text-gray-600 hover:text-black"
+						} text-xs sm:text-sm`}
 					>
 						CRYPTO
 					</button>
@@ -337,7 +341,7 @@ export default function CryptoDetailPage() {
 									: "text-gray-600"
 							}`}
 						>
-							Cryptocurrency
+							Stock Index
 						</p>
 					</div>
 					<div className="flex items-center gap-6">
