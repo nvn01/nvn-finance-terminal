@@ -163,7 +163,7 @@ const databaseStats = {
   slowQueries: 3,
 };
 
-export default function Tab2Page() {
+export default function SourcesPage() {
 	const [isDarkMode, setIsDarkMode] = useState(true);
 	const [refreshing, setRefreshing] = useState(false);
 	const [autoRefresh, setAutoRefresh] = useState(true);
@@ -279,14 +279,14 @@ export default function Tab2Page() {
 						HOME
 					</button>
 					<button
-						onClick={() => navigateToTab("standard")}
+						onClick={() => navigateToTab("indices")}
 						className={`${
 							isDarkMode
 								? "text-gray-400 hover:text-white"
 								: "text-gray-600 hover:text-black"
 						} text-xs sm:text-sm`}
 					>
-						STANDARD
+						INDICES
 					</button>
 					<button
 						onClick={() => navigateToTab("stocks")}
@@ -319,7 +319,7 @@ export default function Tab2Page() {
 						CRYPTO
 					</button>
 					<span className="text-yellow-500 text-xs sm:text-sm">
-						TAB 2
+						SOURCES
 					</span>
 					<button
 						onClick={() => navigateToTab("ai")}

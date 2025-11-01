@@ -129,14 +129,14 @@ export default function AIPage() {
 						HOME
 					</button>
 					<button
-						onClick={() => navigateToTab("standard")}
+						onClick={() => navigateToTab("indices")}
 						className={`${
 							isDarkMode
 								? "text-gray-400 hover:text-white"
 								: "text-gray-600 hover:text-black"
 						} text-xs sm:text-sm`}
 					>
-						STANDARD
+						INDICES
 					</button>
 					<button
 						onClick={() => navigateToTab("stocks")}
@@ -169,14 +169,14 @@ export default function AIPage() {
 						CRYPTO
 					</button>
 					<button
-						onClick={() => navigateToTab("tab2")}
+						onClick={() => navigateToTab("sources")}
 						className={`${
 							isDarkMode
 								? "text-gray-400 hover:text-white"
 								: "text-gray-600 hover:text-black"
 						} text-xs sm:text-sm`}
 					>
-						TAB 2
+						SOURCES
 					</button>
 					<span className="text-yellow-500 text-xs sm:text-sm">
 						AI

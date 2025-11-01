@@ -177,7 +177,7 @@ export function MarketTable({
 										);
 									} else {
 										router.push(
-											`/standard/${symbolSlug}`
+											`/indices/${symbolSlug}`
 										);
 									}
 								}}

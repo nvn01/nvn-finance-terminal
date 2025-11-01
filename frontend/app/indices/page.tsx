@@ -21,7 +21,7 @@ import { MarketTable } from "@/components/market-table";
 import { useHydrateSection } from "@/lib/hooks";
 import { symbols } from "@/lib/symbols";
 
-export default function StandardPage() {
+export default function IndicesPage() {
 	const [isDarkMode, setIsDarkMode] = useState(true);
 	const router = useRouter();
 	const [marketType, setMarketType] = useState<
@@ -168,7 +168,7 @@ export default function StandardPage() {
 						HOME
 					</button>
 					<span className="text-yellow-500 text-xs sm:text-sm">
-						STANDARD
+						INDICES
 					</span>
 					<button
 						onClick={() => navigateToTab("stocks")}
@@ -201,14 +201,14 @@ export default function StandardPage() {
 						CRYPTO
 					</button>
 					<button
-						onClick={() => navigateToTab("tab2")}
+						onClick={() => navigateToTab("sources")}
 						className={`${
 							isDarkMode
 								? "text-gray-400 hover:text-white"
 								: "text-gray-600 hover:text-black"
 						} text-xs sm:text-sm`}
 					>
-						TAB 2
+						SOURCES
 					</button>
 					<button
 						onClick={() => navigateToTab("ai")}
@@ -344,7 +344,7 @@ export default function StandardPage() {
 			>
 				<div className="relative">
 					<span className="font-bold">
-						Standard Markets
+						Indices Markets
 					</span>
 				</div>
 

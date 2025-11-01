@@ -331,14 +331,14 @@ export default function StocksPage() {
 						HOME
 					</button>
 					<button
-						onClick={() => navigateToTab("standard")}
+						onClick={() => navigateToTab("indices")}
 						className={`${
 							isDarkMode
 								? "text-gray-400 hover:text-white"
 								: "text-gray-600 hover:text-black"
 						} text-xs sm:text-sm`}
 					>
-						STANDARD
+						INDICES
 					</button>
 					<span className="text-yellow-500 text-xs sm:text-sm">
 						STOCKS
@@ -364,14 +364,14 @@ export default function StocksPage() {
 						CRYPTO
 					</button>
 					<button
-						onClick={() => navigateToTab("tab2")}
+						onClick={() => navigateToTab("sources")}
 						className={`${
 							isDarkMode
 								? "text-gray-400 hover:text-white"
 								: "text-gray-600 hover:text-black"
 						} text-xs sm:text-sm`}
 					>
-						TAB 2
+						SOURCES
 					</button>
 					<button
 						onClick={() => navigateToTab("ai")}

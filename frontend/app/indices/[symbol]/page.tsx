@@ -56,7 +56,7 @@ const getMarketInfo = (symbol: string) => {
 	);
 };
 
-export default function StandardDetailPage() {
+export default function IndicesDetailPage() {
 	const [isDarkMode, setIsDarkMode] = useState(true);
 	const router = useRouter();
 	const params = useParams();
@@ -89,7 +89,7 @@ export default function StandardDetailPage() {
 	};
 
 	const goBack = () => {
-		router.push("/standard");
+		router.push("/indices");
 	};
 
 	const exportChartData = () => {
@@ -172,10 +172,10 @@ export default function StandardDetailPage() {
 						HOME
 					</button>
 					<button
-						onClick={() => navigateToTab("standard")}
+						onClick={() => navigateToTab("indices")}
 						className="text-yellow-500 text-xs sm:text-sm"
 					>
-						STANDARD
+						INDICES
 					</button>
 					<button
 						onClick={() => navigateToTab("stocks")}
@@ -208,14 +208,14 @@ export default function StandardDetailPage() {
 						CRYPTO
 					</button>
 					<button
-						onClick={() => navigateToTab("tab2")}
+						onClick={() => navigateToTab("sources")}
 						className={`${
 							isDarkMode
 								? "text-gray-400 hover:text-white"
 								: "text-gray-600 hover:text-black"
 						} text-xs sm:text-sm`}
 					>
-						TAB 2
+						SOURCES
 					</button>
 					<button
 						onClick={() => navigateToTab("ai")}
@@ -341,7 +341,7 @@ export default function StandardDetailPage() {
 									: "text-gray-600"
 							}`}
 						>
-							Stock Index
+							Market Index
 						</p>
 					</div>
 					<div className="flex items-center gap-6">
@@ -426,33 +426,18 @@ export default function StandardDetailPage() {
 						}`}
 					>
 						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-4">
-								<span className="bg-[#ff9800] px-2 py-1 text-black text-sm font-bold">
-									INTRADAY
-								</span>
-								<span
-									className={`text-sm ${
-										isDarkMode
-											? "text-gray-300"
-											: "text-gray-700"
-									}`}
-								>
-									Previous Close:{" "}
-									{(
-										marketInfo.value -
-										marketInfo.change
-									).toFixed(2)}
-								</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<span className="text-sm text-gray-500">
-									11/2021 - 01/2024
-								</span>
-							</div>
+							<h2 className="text-lg font-bold">
+								Price Chart
+							</h2>
+							<button
+								onClick={exportChartData}
+								className="bg-[#ff9800] hover:bg-[#e68900] px-3 py-1 text-black text-sm rounded transition-colors"
+							>
+								Export Data
+							</button>
 						</div>
 					</div>
-
-					<div className="relative">
+					<div className="p-4">
 						<MarketChart
 							data={chartData}
 							isDarkMode={isDarkMode}
@@ -460,7 +445,7 @@ export default function StandardDetailPage() {
 					</div>
 				</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 					<div
 						className={`${
 							isDarkMode
@@ -468,7 +453,7 @@ export default function StandardDetailPage() {
 								: "bg-white border-gray-300"
 						} border rounded-lg p-4`}
 					>
-						<h3 className="font-bold mb-3 text-[#ff9800]">
+						<h3 className="text-lg font-bold mb-4">
 							Market Statistics
 						</h3>
 						<div className="space-y-2">
@@ -482,12 +467,10 @@ export default function StandardDetailPage() {
 								>
 									Open:
 								</span>
-								<span>
+								<span className="font-medium">
 									{(
 										marketInfo.value -
-										marketInfo.change +
-										Math.random() * 5 -
-										2.5
+										marketInfo.change
 									).toFixed(2)}
 								</span>
 							</div>
@@ -501,10 +484,13 @@ export default function StandardDetailPage() {
 								>
 									High:
 								</span>
-								<span>
+								<span className="font-medium">
 									{(
 										marketInfo.value +
-										Math.random() * 10
+										Math.abs(
+											marketInfo.change
+										) *
+											0.5
 									).toFixed(2)}
 								</span>
 							</div>
@@ -518,106 +504,14 @@ export default function StandardDetailPage() {
 								>
 									Low:
 								</span>
-								<span>
+								<span className="font-medium">
 									{(
 										marketInfo.value -
-										Math.random() * 10
+										Math.abs(
+											marketInfo.change
+										) *
+											0.5
 									).toFixed(2)}
-								</span>
-							</div>
-							<div className="flex justify-between">
-								<span
-									className={
-										isDarkMode
-											? "text-gray-400"
-											: "text-gray-600"
-									}
-								>
-									Volume:
-								</span>
-								<span>
-									{(
-										Math.random() *
-											1000000 +
-										500000
-									).toLocaleString()}
-								</span>
-							</div>
-						</div>
-					</div>
-
-					<div
-						className={`${
-							isDarkMode
-								? "bg-[#1a1a1a] border-gray-700"
-								: "bg-white border-gray-300"
-						} border rounded-lg p-4`}
-					>
-						<h3 className="font-bold mb-3 text-[#ff9800]">
-							Performance
-						</h3>
-						<div className="space-y-2">
-							<div className="flex justify-between">
-								<span
-									className={
-										isDarkMode
-											? "text-gray-400"
-											: "text-gray-600"
-									}
-								>
-									1 Day:
-								</span>
-								<span
-									className={
-										marketInfo.pctChange >=
-										0
-											? "text-green-500"
-											: "text-red-500"
-									}
-								>
-									{marketInfo.pctChange >= 0
-										? "+"
-										: ""}
-									{marketInfo.pctChange.toFixed(
-										2
-									)}
-									%
-								</span>
-							</div>
-							<div className="flex justify-between">
-								<span
-									className={
-										isDarkMode
-											? "text-gray-400"
-											: "text-gray-600"
-									}
-								>
-									1 Week:
-								</span>
-								<span className="text-green-500">
-									+
-									{(
-										Math.random() * 5
-									).toFixed(2)}
-									%
-								</span>
-							</div>
-							<div className="flex justify-between">
-								<span
-									className={
-										isDarkMode
-											? "text-gray-400"
-											: "text-gray-600"
-									}
-								>
-									1 Month:
-								</span>
-								<span className="text-red-500">
-									-
-									{(
-										Math.random() * 3
-									).toFixed(2)}
-									%
 								</span>
 							</div>
 							<div className="flex justify-between">
@@ -631,18 +525,16 @@ export default function StandardDetailPage() {
 									YTD:
 								</span>
 								<span
-									className={
+									className={`font-medium ${
 										marketInfo.ytd >= 0
 											? "text-green-500"
 											: "text-red-500"
-									}
+									}`}
 								>
 									{marketInfo.ytd >= 0
 										? "+"
 										: ""}
-									{marketInfo.ytd.toFixed(
-										2
-									)}
+									{marketInfo.ytd.toFixed(2)}
 									%
 								</span>
 							</div>
@@ -656,252 +548,26 @@ export default function StandardDetailPage() {
 								: "bg-white border-gray-300"
 						} border rounded-lg p-4`}
 					>
-						<h3 className="font-bold mb-3 text-[#ff9800]">
-							Market Status
+						<h3 className="text-lg font-bold mb-4">
+							Quick Actions
 						</h3>
 						<div className="space-y-2">
-							<div className="flex items-center gap-2">
-								<Activity className="h-4 w-4 text-green-500" />
-								<span className="text-green-500">
-									Market Open
-								</span>
-							</div>
-							<div className="flex justify-between">
-								<span
-									className={
-										isDarkMode
-											? "text-gray-400"
-											: "text-gray-600"
-									}
-								>
-									Last Update:
-								</span>
-								<span>{marketInfo.time}</span>
-							</div>
-							<div className="flex justify-between">
-								<span
-									className={
-										isDarkMode
-											? "text-gray-400"
-											: "text-gray-600"
-									}
-								>
-									Timezone:
-								</span>
-								<span>EST</span>
-							</div>
-							<div className="flex justify-between">
-								<span
-									className={
-										isDarkMode
-											? "text-gray-400"
-											: "text-gray-600"
-									}
-								>
-									Currency:
-								</span>
-								<span>USD</span>
-							</div>
+							<button className="w-full bg-[#ff9800] hover:bg-[#e68900] px-4 py-2 text-black rounded transition-colors">
+								Add to Watchlist
+							</button>
+							<button className="w-full bg-green-600 hover:bg-green-700 px-4 py-2 text-white rounded transition-colors">
+								Set Alert
+							</button>
+							<button className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 text-white rounded transition-colors">
+								Compare Markets
+							</button>
+							<button className="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 text-white rounded transition-colors">
+								View News
+							</button>
 						</div>
-					</div>
-				</div>
-
-				<div
-					className={`mt-4 ${
-						isDarkMode ? "bg-[#1a1a1a]" : "bg-[#e6e6e6]"
-					} p-3 rounded flex items-center justify-between`}
-				>
-					<div className="flex items-center gap-4">
-						<button
-							onClick={exportChartData}
-							className="bg-[#ff9800] hover:bg-[#e68900] px-4 py-2 text-black text-sm font-medium rounded transition-colors"
-						>
-							Export Chart Data
-						</button>
-						<button className="text-[#ff9800] hover:underline text-sm">
-							Add to Watchlist
-						</button>
-						<button className="text-[#ff9800] hover:underline text-sm">
-							Set Price Alert
-						</button>
-					</div>
-					<div className="text-xs text-gray-500">
-						Last updated:{" "}
-						{new Date().toLocaleTimeString()}
 					</div>
 				</div>
 			</div>
-
-			{showNewsPanel && (
-				<div
-					className={`fixed top-20 right-4 w-80 ${
-						isDarkMode
-							? "bg-[#1a1a1a] border-gray-700"
-							: "bg-white border-gray-300"
-					} border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto`}
-				>
-					<div
-						className={`${
-							isDarkMode
-								? "bg-[#2a2a2a]"
-								: "bg-[#f5f5f5]"
-						} px-4 py-2 border-b ${
-							isDarkMode
-								? "border-gray-700"
-								: "border-gray-300"
-						} flex justify-between items-center`}
-					>
-						<h3 className="font-bold text-[#ff9800]">
-							Market News
-						</h3>
-						<button
-							onClick={() =>
-								setShowNewsPanel(false)
-							}
-							className="text-gray-500 hover:text-white"
-						>
-							<X className="h-4 w-4" />
-						</button>
-					</div>
-					<div className="p-4 space-y-3">
-						<div className="border-b border-gray-600 pb-2">
-							<div className="text-sm font-medium">
-								Fed Signals Rate Cut Ahead
-							</div>
-							<div className="text-xs text-gray-400">
-								2 hours ago • Reuters
-							</div>
-						</div>
-						<div className="border-b border-gray-600 pb-2">
-							<div className="text-sm font-medium">
-								Market Volatility Increases
-							</div>
-							<div className="text-xs text-gray-400">
-								4 hours ago • Bloomberg
-							</div>
-						</div>
-						<div className="border-b border-gray-600 pb-2">
-							<div className="text-sm font-medium">
-								Tech Stocks Rally Continues
-							</div>
-							<div className="text-xs text-gray-400">
-								6 hours ago • CNBC
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{showAlerts && (
-				<div
-					className={`fixed top-20 right-4 w-80 ${
-						isDarkMode
-							? "bg-[#1a1a1a] border-gray-700"
-							: "bg-white border-gray-300"
-					} border rounded-lg shadow-lg z-50`}
-				>
-					<div
-						className={`${
-							isDarkMode
-								? "bg-[#2a2a2a]"
-								: "bg-[#f5f5f5]"
-						} px-4 py-2 border-b ${
-							isDarkMode
-								? "border-gray-700"
-								: "border-gray-300"
-						} flex justify-between items-center`}
-					>
-						<h3 className="font-bold text-[#ff9800]">
-							Price Alerts
-						</h3>
-						<button
-							onClick={() => setShowAlerts(false)}
-							className="text-gray-500 hover:text-white"
-						>
-							<X className="h-4 w-4" />
-						</button>
-					</div>
-					<div className="p-4">
-						<div className="text-sm text-green-500 mb-2">
-							✓ {marketInfo.id} reached target:{" "}
-							{marketInfo.value.toFixed(2)}
-						</div>
-						<div className="text-xs text-gray-400">
-							Alert triggered 15 minutes ago
-						</div>
-					</div>
-				</div>
-			)}
-
-			{showHelp && (
-				<div
-					className={`fixed top-20 right-4 w-96 ${
-						isDarkMode
-							? "bg-[#1a1a1a] border-gray-700"
-							: "bg-white border-gray-300"
-					} border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto`}
-				>
-					<div
-						className={`${
-							isDarkMode
-								? "bg-[#2a2a2a]"
-								: "bg-[#f5f5f5]"
-						} px-4 py-2 border-b ${
-							isDarkMode
-								? "border-gray-700"
-								: "border-gray-300"
-						} flex justify-between items-center`}
-					>
-						<h3 className="font-bold text-[#ff9800]">
-							Bloomberg Functions
-						</h3>
-						<button
-							onClick={() => setShowHelp(false)}
-							className="text-gray-500 hover:text-white"
-						>
-							<X className="h-4 w-4" />
-						</button>
-					</div>
-					<div className="p-4 space-y-2 text-sm">
-						<div>
-							<span className="text-[#ff9800] font-mono">
-								GP
-							</span>{" "}
-							- Get Prices
-						</div>
-						<div>
-							<span className="text-[#ff9800] font-mono">
-								CN
-							</span>{" "}
-							- Company News
-						</div>
-						<div>
-							<span className="text-[#ff9800] font-mono">
-								FA
-							</span>{" "}
-							- Financial Analysis
-						</div>
-						<div>
-							<span className="text-[#ff9800] font-mono">
-								ANR
-							</span>{" "}
-							- Analyst Recommendations
-						</div>
-						<div>
-							<span className="text-[#ff9800] font-mono">
-								HDS
-							</span>{" "}
-							- Historical Data
-						</div>
-						<div>
-							<span className="text-[#ff9800] font-mono">
-								COMP
-							</span>{" "}
-							- Company Comparison
-						</div>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 }
